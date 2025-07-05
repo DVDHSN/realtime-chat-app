@@ -87,11 +87,6 @@ if os.environ.get('DATABASE_URL'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
 
-# Render PostgreSQL database
-if os.environ.get('RENDER_DATABASE_URL'):
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.parse(os.environ.get('RENDER_DATABASE_URL'))
-
 # Railway PostgreSQL database
 if os.environ.get('RAILWAY_ENVIRONMENT'):
     import dj_database_url
