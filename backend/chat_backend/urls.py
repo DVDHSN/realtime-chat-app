@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+import json
 
 def health_check(request):
     return HttpResponse("""
@@ -245,6 +249,36 @@ def api_docs(request):
     </html>
     """, content_type="text/html")
 
+@csrf_exempt
+def login_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            return JsonResponse({'success': True, 'message': 'Login successful'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid credentials'}, status=401)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+def register_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email', '')
+        
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'success': False, 'message': 'Username already exists'}, status=400)
+        
+        user = User.objects.create_user(username=username, email=email, password=password)
+        login(request, user)
+        return JsonResponse({'success': True, 'message': 'Registration successful'})
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 def home(request):
     return HttpResponse("""
     <!DOCTYPE html>
@@ -273,7 +307,7 @@ def home(request):
 
             .container {
                 text-align: center;
-                max-width: 800px;
+                max-width: 900px;
                 padding: 2rem;
                 animation: fadeInUp 1s ease-out;
             }
@@ -310,10 +344,119 @@ def home(request):
                 animation: pulse 2s infinite;
             }
 
+            .auth-section {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                margin: 2rem 0;
+                max-width: 800px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .auth-card {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 15px;
+                padding: 2rem;
+                animation: slideInUp 0.8s ease-out both;
+            }
+
+            .auth-card:nth-child(1) { animation-delay: 0.2s; }
+            .auth-card:nth-child(2) { animation-delay: 0.4s; }
+
+            .auth-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+                text-align: left;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+            }
+
+            .form-group input {
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .form-group input:focus {
+                outline: none;
+                border-color: rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .form-group input::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .btn {
+                width: 100%;
+                padding: 0.8rem;
+                border: none;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-top: 1rem;
+            }
+
+            .btn-primary {
+                background: linear-gradient(45deg, #4CAF50, #45a049);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+            }
+
+            .btn-secondary {
+                background: linear-gradient(45deg, #2196F3, #1976D2);
+                color: white;
+            }
+
+            .btn-secondary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+            }
+
+            .message {
+                padding: 0.8rem;
+                border-radius: 8px;
+                margin-top: 1rem;
+                font-weight: 500;
+            }
+
+            .message.success {
+                background: rgba(76, 175, 80, 0.2);
+                border: 1px solid #4CAF50;
+            }
+
+            .message.error {
+                background: rgba(244, 67, 54, 0.2);
+                border: 1px solid #F44336;
+            }
+
             .links {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1.5rem;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
                 margin: 2rem 0;
             }
 
@@ -329,10 +472,9 @@ def home(request):
                 animation: slideInUp 0.8s ease-out both;
             }
 
-            .link-card:nth-child(1) { animation-delay: 0.2s; }
-            .link-card:nth-child(2) { animation-delay: 0.4s; }
-            .link-card:nth-child(3) { animation-delay: 0.6s; }
-            .link-card:nth-child(4) { animation-delay: 0.8s; }
+            .link-card:nth-child(1) { animation-delay: 0.6s; }
+            .link-card:nth-child(2) { animation-delay: 0.8s; }
+            .link-card:nth-child(3) { animation-delay: 1.0s; }
 
             .link-card:hover {
                 transform: translateY(-5px);
@@ -437,6 +579,7 @@ def home(request):
 
             @media (max-width: 768px) {
                 .title { font-size: 2.5rem; }
+                .auth-section { grid-template-columns: 1fr; }
                 .links { grid-template-columns: 1fr; }
                 .container { padding: 1rem; }
             }
@@ -448,6 +591,44 @@ def home(request):
                 <h1 class="title floating">🚀 Realtime Chat App</h1>
                 <p class="subtitle">Your Django backend is running successfully!</p>
                 <div class="status">✅ Backend Online</div>
+            </div>
+
+            <div class="auth-section">
+                <div class="auth-card">
+                    <h3 class="auth-title">🔐 Login</h3>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" id="loginUsername" placeholder="Enter username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <div id="loginMessage"></div>
+                    </form>
+                </div>
+
+                <div class="auth-card">
+                    <h3 class="auth-title">📝 Register</h3>
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="registerUsername">Username</label>
+                            <input type="text" id="registerUsername" placeholder="Choose username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <input type="email" id="registerEmail" placeholder="Enter email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" placeholder="Choose password" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Register</button>
+                        <div id="registerMessage"></div>
+                    </form>
+                </div>
             </div>
 
             <div class="links">
@@ -468,12 +649,6 @@ def home(request):
                     <div class="link-title">Admin Panel</div>
                     <div class="link-desc">Django administration</div>
                 </a>
-                
-                <a href="https://vercel.com" class="link-card" target="_blank">
-                    <span class="link-icon">🎨</span>
-                    <div class="link-title">Deploy Frontend</div>
-                    <div class="link-desc">Deploy Vue.js to Vercel</div>
-                </a>
             </div>
 
             <div class="tech-stack">
@@ -491,6 +666,75 @@ def home(request):
                 </p>
             </div>
         </div>
+
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                const messageDiv = document.getElementById('loginMessage');
+
+                try {
+                    const response = await fetch('/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        messageDiv.className = 'message success';
+                        messageDiv.textContent = 'Login successful! Redirecting...';
+                        setTimeout(() => {
+                            window.location.href = '/api/docs/';
+                        }, 1500);
+                    } else {
+                        messageDiv.className = 'message error';
+                        messageDiv.textContent = data.message || 'Login failed';
+                    }
+                } catch (error) {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = 'Network error. Please try again.';
+                }
+            });
+
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('registerUsername').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const messageDiv = document.getElementById('registerMessage');
+
+                try {
+                    const response = await fetch('/register/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, email, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        messageDiv.className = 'message success';
+                        messageDiv.textContent = 'Registration successful! Redirecting...';
+                        setTimeout(() => {
+                            window.location.href = '/api/docs/';
+                        }, 1500);
+                    } else {
+                        messageDiv.className = 'message error';
+                        messageDiv.textContent = data.message || 'Registration failed';
+                    }
+                } catch (error) {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = 'Network error. Please try again.';
+                }
+            });
+        </script>
     </body>
     </html>
     """, content_type="text/html")
@@ -501,6 +745,8 @@ urlpatterns = [
     path('api/', include('chat.urls')),
     path('api/docs/', api_docs, name='api_docs'),
     path('health/', health_check, name='health_check'),
+    path('login/', login_api, name='login_api'),
+    path('register/', register_api, name='register_api'),
 ]
 
 # Add notifs URLs if available
