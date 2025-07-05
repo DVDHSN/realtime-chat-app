@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://realtime-chat-backend.fly.dev/api/$1"
+      "destination": "https://your-railway-app.railway.app/api/$1"
     },
     {
       "source": "/ws/(.*)",
-      "destination": "wss://realtime-chat-backend.fly.dev/ws/$1"
+      "destination": "wss://your-railway-app.railway.app/ws/$1"
     }
   ],
   "headers": [

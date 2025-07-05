@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
-// API base URL - using Fly.io backend
-const API_BASE_URL = 'https://realtime-chat-backend.fly.dev'
+// API base URL - using Railway backend (update with your Railway URL)
+const API_BASE_URL = 'https://your-railway-app.railway.app'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(null)
