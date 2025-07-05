@@ -24,19 +24,19 @@ export const useUserStore = defineStore('user', () => {
   const login = async (credentials) => {
     isLoading.value = true
     try {
-      const response = await api.post('/login/', credentials)
-      if (response.data.success) {
-        user.value = response.data.user
+      const response = await api.post('/api/users/login/', credentials)
+      if (response.data) {
+        user.value = response.data
         isAuthenticated.value = true
         return { success: true }
       } else {
-        return { success: false, error: response.data.message }
+        return { success: false, error: 'Login failed' }
       }
     } catch (error) {
       console.error('Login error:', error)
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.response?.data?.error || 'Login failed' 
       }
     } finally {
       isLoading.value = false
@@ -47,19 +47,19 @@ export const useUserStore = defineStore('user', () => {
   const register = async (userData) => {
     isLoading.value = true
     try {
-      const response = await api.post('/register/', userData)
-      if (response.data.success) {
-        user.value = response.data.user
+      const response = await api.post('/api/users/register/', userData)
+      if (response.data) {
+        user.value = response.data
         isAuthenticated.value = true
         return { success: true }
       } else {
-        return { success: false, error: response.data.message }
+        return { success: false, error: 'Registration failed' }
       }
     } catch (error) {
       console.error('Registration error:', error)
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
+        error: error.response?.data?.error || 'Registration failed' 
       }
     } finally {
       isLoading.value = false

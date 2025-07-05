@@ -154,6 +154,13 @@ export default {
     const currentRoom = computed(() => chatStore.currentRoom)
     
     onMounted(async () => {
+      // Check authentication first
+      const isAuth = await userStore.checkAuth()
+      if (!isAuth) {
+        router.push('/login')
+        return
+      }
+      
       await chatStore.fetchRooms()
       
       // Set initial room from route or default to first room

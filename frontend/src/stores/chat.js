@@ -58,11 +58,15 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // Send message
-  const sendMessage = async (content, roomId) => {
+  const sendMessage = async (content) => {
     try {
+      if (!currentRoom.value) {
+        return { success: false, error: 'No room selected' }
+      }
+
       const response = await api.post('/api/messages/', {
         content,
-        room: roomId
+        room: currentRoom.value.id
       })
       
       if (ws.value && ws.value.readyState === WebSocket.OPEN) {
@@ -72,10 +76,10 @@ export const useChatStore = defineStore('chat', () => {
         }))
       }
       
-      return response.data
+      return { success: true, data: response.data }
     } catch (error) {
       console.error('Error sending message:', error)
-      throw error
+      return { success: false, error: error.response?.data?.message || 'Failed to send message' }
     }
   }
 
@@ -84,45 +88,55 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const response = await api.get(`/api/chatrooms/${roomId}/messages/`)
       messages.value = response.data
-      return response.data
+      return { success: true, data: response.data }
     } catch (error) {
       console.error('Error fetching messages:', error)
-      throw error
+      return { success: false, error: error.response?.data?.message || 'Failed to fetch messages' }
     }
   }
 
   // Get all rooms
-  const getRooms = async () => {
+  const fetchRooms = async () => {
     try {
       const response = await api.get('/api/chatrooms/')
       rooms.value = response.data
-      return response.data
+      return { success: true, data: response.data }
     } catch (error) {
       console.error('Error fetching rooms:', error)
-      throw error
+      return { success: false, error: error.response?.data?.message || 'Failed to fetch rooms' }
     }
   }
 
   // Create a new room
-  const createRoom = async (name, description = '') => {
+  const createRoom = async (roomData) => {
     try {
       const response = await api.post('/api/chatrooms/', {
-        name,
-        description
+        name: roomData.name,
+        description: roomData.description || ''
       })
-      rooms.value.push(response.data)
-      return response.data
+      
+      const newRoom = response.data
+      rooms.value.push(newRoom)
+      
+      return { success: true, room: newRoom }
     } catch (error) {
       console.error('Error creating room:', error)
-      throw error
+      return { success: false, error: error.response?.data?.message || 'Failed to create room' }
+    }
+  }
+
+  // Set current room
+  const setCurrentRoom = (room) => {
+    currentRoom.value = room
+    if (room) {
+      connectWebSocket(room.id)
+      getMessages(room.id)
     }
   }
 
   // Join a room
   const joinRoom = (room) => {
-    currentRoom.value = room
-    connectWebSocket(room.id)
-    getMessages(room.id)
+    setCurrentRoom(room)
   }
 
   // Disconnect WebSocket
@@ -142,8 +156,9 @@ export const useChatStore = defineStore('chat', () => {
     currentMessages,
     sendMessage,
     getMessages,
-    getRooms,
+    fetchRooms,
     createRoom,
+    setCurrentRoom,
     joinRoom,
     connectWebSocket,
     disconnect
