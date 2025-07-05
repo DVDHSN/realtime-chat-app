@@ -1,6 +1,6 @@
 # Chat App Frontend
 
-Vue.js 3 frontend for the realtime chat application.
+Vue.js 3 + Vite frontend for the realtime chat application.
 
 ## 🚀 Quick Deploy to Vercel
 
@@ -11,7 +11,7 @@ Vue.js 3 frontend for the realtime chat application.
 3. **Click "New Project"**
 4. **Import your repository**: `DVDHSN/realtime-chat-app`
 5. **Configure settings**:
-   - **Framework Preset**: Vue.js
+   - **Framework Preset**: Vite
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
@@ -38,7 +38,7 @@ vercel
 2. **Select the repository**: `DVDHSN/realtime-chat-app`
 3. **Configure build settings**:
    - **Root Directory**: `frontend`
-   - **Framework**: Vue.js
+   - **Framework**: Vite
 4. **Deploy automatically** on every push
 
 ## 🔧 Configuration
@@ -98,6 +98,7 @@ The app uses these environment variables (configured in Vercel):
 ## 🎨 Features
 
 - **Modern Vue 3** with Composition API
+- **Vite** for fast development and building
 - **Pinia** for state management
 - **Vue Router** for navigation
 - **Real-time chat** with WebSockets
@@ -117,7 +118,7 @@ The frontend connects to your Django backend on Render:
 ## 🚀 Deployment Checklist
 
 - [x] Repository connected to Vercel
-- [x] Build settings configured
+- [x] Build settings configured (Vite)
 - [x] Environment variables set
 - [x] Backend URL configured
 - [x] WebSocket URL configured
@@ -154,6 +155,7 @@ After deployment:
 2. **API errors**: Verify backend URL in stores
 3. **WebSocket errors**: Check WebSocket URL configuration
 4. **CORS errors**: Ensure backend CORS settings
+5. **Vite build issues**: Check `vite.config.js` configuration
 
 ### Getting Help
 
