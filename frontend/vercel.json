@@ -5,7 +5,30 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://your-railway-backend.railway.app/api/$1"
+      "destination": "https://realtime-chat-app-to8j.onrender.com/api/$1"
+    },
+    {
+      "source": "/ws/(.*)",
+      "destination": "wss://realtime-chat-app-to8j.onrender.com/ws/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
   ]
 } 

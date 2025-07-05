@@ -2,145 +2,150 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
+// API base URL - will use Render backend
+const API_BASE_URL = 'https://realtime-chat-app-to8j.onrender.com'
+const WS_BASE_URL = 'wss://realtime-chat-app-to8j.onrender.com'
+
 export const useChatStore = defineStore('chat', () => {
+  const messages = ref([])
   const rooms = ref([])
   const currentRoom = ref(null)
-  const messages = ref([])
-  const onlineUsers = ref([])
-  const websocket = ref(null)
+  const ws = ref(null)
   const isConnected = ref(false)
 
-  const currentRoomName = computed(() => currentRoom.value?.name || 'general')
+  // Computed properties
+  const currentMessages = computed(() => {
+    if (!currentRoom.value) return []
+    return messages.value.filter(msg => msg.room === currentRoom.value.id)
+  })
 
-  const fetchRooms = async () => {
-    try {
-      const response = await axios.get('/api/rooms/', {
-        withCredentials: true
-      })
-      rooms.value = response.data
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data || 'Failed to fetch rooms' 
-      }
+  // API functions
+  const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true
+  })
+
+  // WebSocket connection
+  const connectWebSocket = (roomId) => {
+    if (ws.value) {
+      ws.value.close()
     }
-  }
 
-  const createRoom = async (roomData) => {
-    try {
-      const response = await axios.post('/api/rooms/', roomData, {
-        withCredentials: true
-      })
-      rooms.value.push(response.data)
-      return { success: true, room: response.data }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data || 'Failed to create room' 
-      }
-    }
-  }
+    const wsUrl = `${WS_BASE_URL}/ws/chat/${roomId}/`
+    ws.value = new WebSocket(wsUrl)
 
-  const fetchMessages = async (roomName) => {
-    try {
-      const response = await axios.get(`/api/rooms/${roomName}/messages/`, {
-        withCredentials: true
-      })
-      messages.value = response.data
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data || 'Failed to fetch messages' 
-      }
-    }
-  }
-
-  const sendMessage = async (content) => {
-    if (!currentRoom.value) return { success: false, error: 'No room selected' }
-    
-    try {
-      const response = await axios.post('/api/messages/', {
-        room: currentRoom.value.id,
-        content
-      }, {
-        withCredentials: true
-      })
-      messages.value.push(response.data)
-      return { success: true }
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data || 'Failed to send message' 
-      }
-    }
-  }
-
-  const connectWebSocket = (roomName) => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomName}/`
-    
-    websocket.value = new WebSocket(wsUrl)
-    
-    websocket.value.onopen = () => {
-      isConnected.value = true
+    ws.value.onopen = () => {
       console.log('WebSocket connected')
+      isConnected.value = true
     }
-    
-    websocket.value.onmessage = (event) => {
+
+    ws.value.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      if (data.message) {
-        messages.value.push({
-          id: Date.now(),
-          content: data.message,
-          user: { username: data.username, id: data.user_id },
-          timestamp: new Date().toISOString()
-        })
+      if (data.type === 'chat_message') {
+        messages.value.push(data.message)
       }
     }
-    
-    websocket.value.onclose = () => {
-      isConnected.value = false
+
+    ws.value.onclose = () => {
       console.log('WebSocket disconnected')
+      isConnected.value = false
     }
-    
-    websocket.value.onerror = (error) => {
+
+    ws.value.onerror = (error) => {
       console.error('WebSocket error:', error)
       isConnected.value = false
     }
   }
 
-  const disconnectWebSocket = () => {
-    if (websocket.value) {
-      websocket.value.close()
-      websocket.value = null
+  // Send message
+  const sendMessage = async (content, roomId) => {
+    try {
+      const response = await api.post('/api/messages/', {
+        content,
+        room: roomId
+      })
+      
+      if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+        ws.value.send(JSON.stringify({
+          type: 'chat_message',
+          message: response.data
+        }))
+      }
+      
+      return response.data
+    } catch (error) {
+      console.error('Error sending message:', error)
+      throw error
+    }
+  }
+
+  // Get messages for a room
+  const getMessages = async (roomId) => {
+    try {
+      const response = await api.get(`/api/chatrooms/${roomId}/messages/`)
+      messages.value = response.data
+      return response.data
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      throw error
+    }
+  }
+
+  // Get all rooms
+  const getRooms = async () => {
+    try {
+      const response = await api.get('/api/chatrooms/')
+      rooms.value = response.data
+      return response.data
+    } catch (error) {
+      console.error('Error fetching rooms:', error)
+      throw error
+    }
+  }
+
+  // Create a new room
+  const createRoom = async (name, description = '') => {
+    try {
+      const response = await api.post('/api/chatrooms/', {
+        name,
+        description
+      })
+      rooms.value.push(response.data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating room:', error)
+      throw error
+    }
+  }
+
+  // Join a room
+  const joinRoom = (room) => {
+    currentRoom.value = room
+    connectWebSocket(room.id)
+    getMessages(room.id)
+  }
+
+  // Disconnect WebSocket
+  const disconnect = () => {
+    if (ws.value) {
+      ws.value.close()
+      ws.value = null
     }
     isConnected.value = false
   }
 
-  const setCurrentRoom = (room) => {
-    disconnectWebSocket()
-    currentRoom.value = room
-    if (room) {
-      connectWebSocket(room.name)
-      fetchMessages(room.name)
-    }
-  }
-
   return {
+    messages,
     rooms,
     currentRoom,
-    messages,
-    onlineUsers,
     isConnected,
-    currentRoomName,
-    fetchRooms,
-    createRoom,
-    fetchMessages,
+    currentMessages,
     sendMessage,
+    getMessages,
+    getRooms,
+    createRoom,
+    joinRoom,
     connectWebSocket,
-    disconnectWebSocket,
-    setCurrentRoom
+    disconnect
   }
 }) 
