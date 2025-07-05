@@ -13,8 +13,8 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
-# Railway deployment settings
-if os.environ.get('RAILWAY_ENVIRONMENT'):
+# Fly.io deployment settings
+if os.environ.get('FLY_APP_NAME'):
     DEBUG = False
     ALLOWED_HOSTS = ['*']
     SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
@@ -92,6 +92,17 @@ if os.environ.get('RENDER_DATABASE_URL'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.parse(os.environ.get('RENDER_DATABASE_URL'))
 
+# Fly.io PostgreSQL database
+if os.environ.get('FLY_POSTGRES_HOST'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('FLY_POSTGRES_DB', 'postgres'),
+        'USER': os.environ.get('FLY_POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('FLY_POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('FLY_POSTGRES_HOST'),
+        'PORT': os.environ.get('FLY_POSTGRES_PORT', '5432'),
+    }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -134,6 +145,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Fly.io Redis for channels (fallback)
+if os.environ.get('FLY_REDIS_URL'):
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 
 # REST Framework
 REST_FRAMEWORK = {

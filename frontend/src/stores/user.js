@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
-// API base URL - will use Render backend
-const API_BASE_URL = 'https://realtime-chat-app-to8j.onrender.com'
+// API base URL - using Fly.io backend
+const API_BASE_URL = 'https://realtime-chat-backend.fly.dev'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(null)

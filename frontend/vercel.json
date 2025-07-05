@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://realtime-chat-app-to8j.onrender.com/api/$1"
+      "destination": "https://realtime-chat-backend.fly.dev/api/$1"
     },
     {
       "source": "/ws/(.*)",
-      "destination": "wss://realtime-chat-app-to8j.onrender.com/ws/$1"
+      "destination": "wss://realtime-chat-backend.fly.dev/ws/$1"
     }
   ],
   "headers": [
