@@ -13,6 +13,12 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
+# Railway deployment settings
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']
+    SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -68,6 +74,11 @@ DATABASES = {
     }
 }
 
+# Railway PostgreSQL database
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -92,6 +103,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
