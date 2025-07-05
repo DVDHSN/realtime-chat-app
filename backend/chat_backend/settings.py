@@ -30,9 +30,15 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'corsheaders',
-    'notifs',
     'chat',
 ]
+
+# Add notifs app if available
+try:
+    import notifs
+    INSTALLED_APPS.append('notifs')
+except ImportError:
+    pass
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
