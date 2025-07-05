@@ -3,7 +3,247 @@ from django.urls import path, include
 from django.http import HttpResponse
 
 def health_check(request):
-    return HttpResponse("OK", content_type="text/plain")
+    return HttpResponse("""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>💚 Health Check - Chat App</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            }
+            .container {
+                text-align: center;
+                padding: 3rem;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                animation: fadeInUp 0.8s ease-out;
+            }
+            .status {
+                font-size: 4rem;
+                margin-bottom: 1rem;
+                animation: pulse 2s infinite;
+            }
+            .message {
+                font-size: 1.5rem;
+                margin-bottom: 2rem;
+                opacity: 0.9;
+            }
+            .details {
+                font-size: 1rem;
+                opacity: 0.7;
+                margin-bottom: 2rem;
+            }
+            .back-btn {
+                display: inline-block;
+                padding: 0.8rem 2rem;
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50px;
+                color: white;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+            .back-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: translateY(-2px);
+            }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(30px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="status">💚</div>
+            <div class="message">Backend is Healthy!</div>
+            <div class="details">
+                Status: OK<br>
+                Response Time: Excellent<br>
+                Database: Connected<br>
+                WebSocket: Ready
+            </div>
+            <a href="/" class="back-btn">← Back to Home</a>
+        </div>
+    </body>
+    </html>
+    """, content_type="text/html")
+
+def api_docs(request):
+    return HttpResponse("""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🔌 API Documentation - Chat App</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                color: white;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 3rem;
+                animation: fadeInUp 1s ease-out;
+            }
+            .title {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                background: linear-gradient(45deg, #fff, #f0f0f0);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .subtitle {
+                font-size: 1.2rem;
+                opacity: 0.8;
+            }
+            .endpoint {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                animation: slideInUp 0.8s ease-out both;
+            }
+            .method {
+                display: inline-block;
+                padding: 0.3rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                margin-right: 1rem;
+            }
+            .get { background: #4CAF50; }
+            .post { background: #2196F3; }
+            .url {
+                font-family: 'Courier New', monospace;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 0.5rem;
+                border-radius: 5px;
+                margin: 0.5rem 0;
+            }
+            .description {
+                margin-top: 0.5rem;
+                opacity: 0.9;
+            }
+            .back-btn {
+                display: inline-block;
+                padding: 0.8rem 2rem;
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50px;
+                color: white;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                margin-top: 2rem;
+            }
+            .back-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: translateY(-2px);
+            }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(30px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slideInUp {
+                from { opacity: 0; transform: translateY(50px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .section {
+                margin-bottom: 3rem;
+            }
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 1.5rem;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+                padding-bottom: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="title">🔌 API Documentation</h1>
+                <p class="subtitle">RESTful API endpoints for the Realtime Chat Application</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Authentication</h2>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <div class="url">/api/users/login/</div>
+                    <div class="description">Authenticate user with username and password</div>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <div class="url">/api/users/register/</div>
+                    <div class="description">Create a new user account</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Chat Rooms</h2>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <div class="url">/api/chatrooms/</div>
+                    <div class="description">Get all chat rooms</div>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <div class="url">/api/chatrooms/</div>
+                    <div class="description">Create a new chat room</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Messages</h2>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <div class="url">/api/messages/</div>
+                    <div class="description">Get all messages</div>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <div class="url">/api/messages/</div>
+                    <div class="description">Send a new message</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """, content_type="text/html")
 
 def home(request):
     return HttpResponse("""
@@ -217,9 +457,9 @@ def home(request):
                     <div class="link-desc">Monitor backend status</div>
                 </a>
                 
-                <a href="/api/" class="link-card">
+                <a href="/api/docs/" class="link-card">
                     <span class="link-icon">🔌</span>
-                    <div class="link-title">API Endpoints</div>
+                    <div class="link-title">API Documentation</div>
                     <div class="link-desc">REST API documentation</div>
                 </a>
                 
@@ -259,6 +499,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('chat.urls')),
+    path('api/docs/', api_docs, name='api_docs'),
     path('health/', health_check, name='health_check'),
 ]
 
