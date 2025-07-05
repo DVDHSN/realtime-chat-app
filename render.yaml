@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: chat-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: RABBITMQ_URL
+        value: amqp://guest:guest@localhost:5672/
+
+  - type: web
+    name: chat-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+
+databases:
+  - name: chat-postgres
+    databaseName: chatdb
+    user: chatuser 

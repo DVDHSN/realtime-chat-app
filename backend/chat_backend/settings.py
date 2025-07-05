@@ -67,6 +67,8 @@ WSGI_APPLICATION = 'chat_backend.wsgi.application'
 ASGI_APPLICATION = 'chat_backend.asgi.application'
 
 # Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -74,10 +76,15 @@ DATABASES = {
     }
 }
 
-# Railway PostgreSQL database
+# Production database configuration
 if os.environ.get('DATABASE_URL'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
+
+# Render PostgreSQL database
+if os.environ.get('RENDER_DATABASE_URL'):
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.parse(os.environ.get('RENDER_DATABASE_URL'))
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

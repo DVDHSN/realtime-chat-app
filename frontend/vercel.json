@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vue",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://your-railway-backend.railway.app/api/$1"
+    }
+  ]
+} 
